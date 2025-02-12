@@ -33,7 +33,26 @@ func RateLimitMiddleware(next http.Handler, ENVS *configs.Conf) http.Handler {
 			return
 		}
 
+		duration, err := time.ParseDuration(ENVS.RateLimiterTimeToken)
+		if err != nil {
+			fmt.Println("Erro na conversão da data:", err)
+			return
+		}
+
 		if limiterData[apiKey].Count >= rateLimiterToken {
+			if limiterData[apiKey].BlockTimestamp.IsZero() {
+				limiterInfo := limiterData[apiKey]
+				limiterInfo.BlockTimestamp = time.Now()
+				limiterData[apiKey] = limiterInfo
+			}
+			if time.Since(limiterData[apiKey].BlockTimestamp) > duration {
+				limiterInfo := limiterData[apiKey]
+				limiterInfo.Count = 0
+				limiterInfo.BlockTimestamp = time.Time{}
+				limiterData[apiKey] = limiterInfo
+			}
+			fmt.Println("Timestamp", limiterData[apiKey].BlockTimestamp)
+
 			w.WriteHeader(http.StatusTooManyRequests)
 			w.Write([]byte("Too many requests"))
 			return
@@ -47,7 +66,6 @@ func RateLimitMiddleware(next http.Handler, ENVS *configs.Conf) http.Handler {
 
 		limiterInfo := limiterData[apiKey]
 		limiterInfo.Count++
-		limiterInfo.BlockTimestamp = time.Now()
 		limiterData[apiKey] = limiterInfo
 
 		fmt.Println("IP", ip)
