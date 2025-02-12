@@ -8,14 +8,11 @@ import (
 	"time"
 
 	"github.com/garciawell/pos-go-rate-limiter/configs"
+	"github.com/garciawell/pos-go-rate-limiter/types"
+	"github.com/garciawell/pos-go-rate-limiter/utils"
 )
 
-type LimiterInfo struct {
-	Count          int
-	BlockTimestamp time.Time
-}
-
-var limiterData = make(map[string]LimiterInfo)
+var limiterData = make(map[string]types.LimiterInfo)
 
 func RateLimitMiddleware(next http.Handler, ENVS *configs.Conf) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -40,25 +37,14 @@ func RateLimitMiddleware(next http.Handler, ENVS *configs.Conf) http.Handler {
 		}
 
 		if limiterData[apiKey].Count >= rateLimiterToken {
-			if limiterData[apiKey].BlockTimestamp.IsZero() {
-				limiterInfo := limiterData[apiKey]
-				limiterInfo.BlockTimestamp = time.Now()
-				limiterData[apiKey] = limiterInfo
-			}
-			if time.Since(limiterData[apiKey].BlockTimestamp) > duration {
-				limiterInfo := limiterData[apiKey]
-				limiterInfo.Count = 0
-				limiterInfo.BlockTimestamp = time.Time{}
-				limiterData[apiKey] = limiterInfo
-			}
-			fmt.Println("Timestamp", limiterData[apiKey].BlockTimestamp)
-
+			utils.ValidateMiddleware(limiterData[apiKey], duration)
 			w.WriteHeader(http.StatusTooManyRequests)
 			w.Write([]byte("Too many requests"))
 			return
 		}
 
 		if limiterData[ip].Count >= rateLimiterIp {
+			utils.ValidateMiddleware(limiterData[ip], duration)
 			w.WriteHeader(http.StatusTooManyRequests)
 			w.Write([]byte("Too many requests"))
 			return
