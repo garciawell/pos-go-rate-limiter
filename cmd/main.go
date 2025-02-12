@@ -35,7 +35,11 @@ func main() {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Logger)
-	r.Use(middlewareInternal.RateLimitMiddleware)
+
+	// PASS ENVIRONMENT VARIABLES TO MIDDLEWARE
+	r.Use(func(next http.Handler) http.Handler {
+		return middlewareInternal.RateLimitMiddleware(next, ENVS)
+	})
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello World!"))

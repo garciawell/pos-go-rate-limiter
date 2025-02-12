@@ -2,3 +2,4 @@
 GET http://localhost:8080 HTTP/1.1
 Host: localhost:8080
 Content-Type: application/json
+API_KEY: "b4f95b95-f2eb-4920-80cb-406b4d2d8fa1"
