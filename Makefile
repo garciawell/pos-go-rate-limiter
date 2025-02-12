@@ -1,2 +1,5 @@
 run:
-	go run cdm/main.go
+	go run cmd/main.go
+
+dev:
+	air
