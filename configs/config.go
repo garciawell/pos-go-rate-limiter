@@ -11,6 +11,7 @@ type Conf struct {
 	RateLimiterTimeToken string `mapstructure:"RATE_LIMITER_TIME_TOKEN"`
 	RateLimiterQtyIp     string `mapstructure:"RATE_LIMITER_QTY_IP"`
 	RateLimiterTimeIp    string `mapstructure:"RATE_LIMITER_TIME_IP"`
+	DbHost               string `mapstructure:"DB_HOST"`
 }
 
 func LoadConfig(path string) (*Conf, error) {

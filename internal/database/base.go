@@ -10,6 +10,13 @@ type Repo struct {
 	RedisClient *redis.Client
 }
 
+type RepoInterface interface {
+	GetBase(key string) (string, error)
+	IncrBase(key string) (int64, error)
+	SetBase(key string, value interface{}) (string, error)
+	SetExBase(key string, expiration time.Duration) (bool, error)
+}
+
 func NewRepo(db *redis.Client) *Repo {
 	return &Repo{
 		RedisClient: db,

@@ -29,9 +29,17 @@ func RateLimiterMiddleware(redisClient *database.Repo) func(http.Handler) http.H
 				return
 			}
 
-			if ExceededLimit(redisClient, apiKey, rateLimiterToken) || ExceededLimit(redisClient, ip, rateLimiterIp) {
-				http.Error(w, "Too many requests", http.StatusTooManyRequests)
-				return
+			if apiKey != "" {
+				if ExceededLimit(redisClient, ip, rateLimiterToken) {
+					http.Error(w, "Too many requests", http.StatusTooManyRequests)
+					return
+				}
+			} else {
+				fmt.Println("API Key não informada", rateLimiterIp)
+				if ExceededLimit(redisClient, apiKey, rateLimiterIp) || ExceededLimit(redisClient, ip, rateLimiterIp) {
+					http.Error(w, "Too many requests", http.StatusTooManyRequests)
+					return
+				}
 			}
 
 			IncrementRequest(redisClient, apiKey, duration)

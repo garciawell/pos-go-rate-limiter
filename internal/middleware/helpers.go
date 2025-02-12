@@ -9,7 +9,10 @@ import (
 	"github.com/go-redis/redis"
 )
 
-func IncrementRequest(redisClient *database.Repo, key string, duration time.Duration) {
+func IncrementRequest(redisClient database.RepoInterface, key string, duration time.Duration) {
+	if key == "" {
+		return
+	}
 	_, err := redisClient.IncrBase(key)
 	if err != nil {
 		fmt.Printf("Erro ao incrementar contador para %s\n", key)
@@ -21,11 +24,12 @@ func IncrementRequest(redisClient *database.Repo, key string, duration time.Dura
 	}
 }
 
-func ExceededLimit(redisClient *database.Repo, key string, limit int) bool {
+func ExceededLimit(redisClient database.RepoInterface, key string, limit int) bool {
 	count, err := redisClient.GetBase(key)
 	if err != nil && err != redis.Nil {
 		fmt.Printf("Erro ao acessar Redis para %s\n", key)
 	}
+	fmt.Println("Contador para", count)
 	countInt, err := strconv.Atoi(count)
 	if err != nil {
 		fmt.Printf("Erro ao converter contador para inteiro para %s\n", key)
