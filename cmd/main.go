@@ -17,25 +17,24 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-
-	conn := database.NewRedisClient()
-	database.RedisClient = conn
 }
 
 func main() {
+	conn := database.NewRedisClient()
+	repo := database.NewRepo(conn)
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Logger)
-	r.Use(middlewareInternal.RateLimitMiddleware)
+	r.Use(middlewareInternal.RateLimiterMiddleware(repo))
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello World!"))
 	})
 
-	defer database.RedisClient.Close()
+	defer conn.Close()
 
 	fmt.Println("Server running on port 8080!")
 	http.ListenAndServe(":8080", r)
