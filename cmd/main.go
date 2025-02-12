@@ -11,21 +11,15 @@ import (
 	"github.com/go-chi/chi/middleware"
 )
 
-var ENVS *configs.Conf
-
 func init() {
-	configs, err := configs.LoadConfig(".")
-	ENVS = configs
+	confEnv, err := configs.LoadConfig(".")
+	configs.ENV = confEnv
 	if err != nil {
 		panic(err)
 	}
 
 	conn := database.NewRedisClient()
-	if err != nil {
-		panic(err)
-	}
-
-	conn.Close()
+	database.RedisClient = conn
 }
 
 func main() {
@@ -35,15 +29,13 @@ func main() {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Logger)
-
-	// PASS ENVIRONMENT VARIABLES TO MIDDLEWARE
-	r.Use(func(next http.Handler) http.Handler {
-		return middlewareInternal.RateLimitMiddleware(next, ENVS)
-	})
+	r.Use(middlewareInternal.RateLimitMiddleware)
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello World!"))
 	})
+
+	defer database.RedisClient.Close()
 
 	fmt.Println("Server running on port 8080!")
 	http.ListenAndServe(":8080", r)

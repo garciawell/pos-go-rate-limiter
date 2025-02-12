@@ -4,6 +4,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+var ENV *Conf
+
 type Conf struct {
 	RateLimiterQtyToken  string `mapstructure:"RATE_LIMITER_QTY_TOKEN"`
 	RateLimiterTimeToken string `mapstructure:"RATE_LIMITER_TIME_TOKEN"`
