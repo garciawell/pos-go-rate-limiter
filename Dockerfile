@@ -8,7 +8,7 @@ RUN GOOS=linux CGO_ENABLED=0 go build -ldflags="-w -s" -o build cmd/main.go
 FROM alpine:latest
 WORKDIR /root/
 COPY --from=builder /app/build .
-COPY --from=builder /app/.env .
+COPY --from=builder /app/.env.example .env
 
 RUN apk --no-cache add ca-certificates
 
